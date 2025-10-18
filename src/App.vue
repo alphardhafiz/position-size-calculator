@@ -16,11 +16,13 @@ const calculate = () => {
   }
 
   const distance = Math.abs(entryPrice - slPrice);
+  const distancePercent = (distance / entryPrice) * 100;
   const coinAmount = maxLossAmount / distance;
   const capital = coinAmount * entryPrice;
 
   result.value = {
     distance: distance.toFixed(4),
+    distancePercent: distancePercent.toFixed(2),
     coinAmount: coinAmount.toFixed(6),
     capital: capital.toFixed(2)
   };
@@ -104,7 +106,7 @@ const calculate = () => {
         <div v-if="result" class="result-card">
           <div class="result-item">
             <span class="result-label">Jarak SL</span>
-            <span class="result-value">{{ result.distance }}</span>
+            <span class="result-value">{{ result.distance }} - ({{ result.distancePercent }}%)</span>
           </div>
           
           <div class="result-item">
