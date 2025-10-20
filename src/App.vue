@@ -1,15 +1,18 @@
+
 <script setup>
 import { ref } from 'vue';
 
-const entry = ref('');
-const stopLoss = ref('');
-const maxLoss = ref('');
+const entry = ref(0);
+const stopLoss = ref(0);
+const maxLoss = ref(0);
+const leverage = ref(0);
 const result = ref(null);
 
 const calculate = () => {
   const entryPrice = parseFloat(entry.value);
   const slPrice = parseFloat(stopLoss.value);
   const maxLossAmount = parseFloat(maxLoss.value);
+  const lev = parseFloat(leverage.value);
 
   if (!entryPrice || !slPrice || !maxLossAmount) {
     return;
@@ -19,12 +22,18 @@ const calculate = () => {
   const distancePercent = (distance / entryPrice) * 100;
   const coinAmount = maxLossAmount / distance;
   const capital = coinAmount * entryPrice;
-
+  let capitalWithLeverage = 0;
+  if (lev > 0 ) {
+    capitalWithLeverage = capital / lev;
+  }
+  
   result.value = {
     distance: distance.toFixed(4),
     distancePercent: distancePercent.toFixed(2),
     coinAmount: coinAmount.toFixed(6),
-    capital: capital.toFixed(2)
+    capital: capital.toFixed(2),
+    leverage: lev,
+    capitalWithLeverage: capitalWithLeverage.toFixed(2)
   };
 };
 </script>
@@ -57,7 +66,7 @@ const calculate = () => {
               Entry Price
             </label>
             <input
-              v-model.number="entry"
+              v-model="entry"
               type="number"
               placeholder="Contoh: 130"
               class="input"
@@ -74,7 +83,7 @@ const calculate = () => {
               Stop Loss
             </label>
             <input
-              v-model.number="stopLoss"
+              v-model="stopLoss"
               type="number"
               placeholder="Contoh: 107"
               class="input"
@@ -90,7 +99,23 @@ const calculate = () => {
               Max Loss (USDT)
             </label>
             <input
-              v-model.number="maxLoss"
+              v-model="maxLoss"
+              type="number"
+              placeholder="Contoh: 10"
+              class="input"
+            />
+          </div>
+
+          <div class="input-group">
+            <label class="label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                <polyline points="17 6 23 6 23 12"></polyline>
+              </svg>
+              Leverage
+            </label>
+            <input
+              v-model="leverage"
               type="number"
               placeholder="Contoh: 10"
               class="input"
@@ -106,7 +131,7 @@ const calculate = () => {
         <div v-if="result" class="result-card">
           <div class="result-item">
             <span class="result-label">Jarak SL</span>
-            <span class="result-value">{{ result.distance }} - ({{ result.distancePercent }}%)</span>
+            <span class="result-value">{{ result.distance }} ({{ result.distancePercent }}%)</span>
           </div>
           
           <div class="result-item">
@@ -115,8 +140,13 @@ const calculate = () => {
           </div>
           
           <div class="result-item result-item-highlight">
-            <span class="result-label-highlight">Modal Diperlukan</span>
+            <span class="result-label-highlight">Modal Tanpa Leverage</span>
             <span class="result-value-highlight">{{ result.capital }} USDT</span>
+          </div>
+          
+          <div class="result-item result-item-highlight" v-if="result.capitalWithLeverage > 0">
+            <span class="result-label-highlight">Modal dengan Leverage {{ result.leverage }}x</span>
+            <span class="result-value-highlight">{{ result.capitalWithLeverage }} USDT</span>
           </div>
         </div>
       </div>
